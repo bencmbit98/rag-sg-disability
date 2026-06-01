@@ -5,10 +5,8 @@ echo  SEN ^& Disability RAG -- Pull from GitHub
 echo ================================================
 echo.
 
-REM ── TP Network fix ──────────────────────────────
-REM Uncomment the line below if git pull fails with
-REM "SSL certificate problem: self signed certificate"
-REM set GIT_SSL_NO_VERIFY=true
+REM ── TP Network SSL bypass (required on TP campus) ──
+set GIT_SSL_NO_VERIFY=true
 REM ────────────────────────────────────────────────
 
 git pull origin main
