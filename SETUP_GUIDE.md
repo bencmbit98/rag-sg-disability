@@ -1173,3 +1173,100 @@ npm run dev
 cd rag-sg-disability
 claude
 ```
+
+---
+
+## SECTION J — Making Frontend UI Changes
+
+Use this workflow whenever you want to update the chat UI, components, pages, or styles.
+
+---
+
+### J1 — Files You Will Edit
+
+| What to change | File(s) |
+|---|---|
+| Chat bubbles, layout | `frontend/components/ChatBubble.tsx`, `ChatWindow.tsx` |
+| Input bar | `frontend/components/MessageInput.tsx` |
+| Header / nav | `frontend/components/Header.tsx` |
+| Source cards | `frontend/components/SourceCard.tsx` |
+| Feedback widget | `frontend/components/FeedbackWidget.tsx` |
+| Home/chat page | `frontend/app/page.tsx` |
+| About page | `frontend/app/about/page.tsx` |
+| Global styles | `frontend/app/globals.css` |
+| PWA config | `frontend/next.config.mjs`, `frontend/public/manifest.json` |
+
+---
+
+### J2 — Preview Changes Locally
+
+**Step 1 — Start the backend** (Terminal 1):
+```powershell
+cd backend
+.venv\Scripts\Activate.ps1
+$env:PYTHONHTTPSVERIFY = "0"
+$env:HF_HUB_DISABLE_SSL_VERIFICATION = "1"
+uvicorn app.main:app --reload --port 8000
+```
+
+**Step 2 — Start the frontend dev server** (Terminal 2):
+```powershell
+cd frontend
+npm run dev
+```
+
+**Step 3 — Open http://localhost:3000** in your browser.
+
+Changes to any `frontend/` file auto-reload in the browser instantly — no restart needed.
+
+---
+
+### J3 — Deploy Changes Live
+
+Once you are happy with the changes:
+
+**Step 1 — Build the production bundle:**
+```powershell
+cd frontend
+npm run build
+```
+
+**Step 2 — Deploy to Firebase Hosting:**
+```powershell
+$env:NODE_TLS_REJECT_UNAUTHORIZED = "0"
+firebase deploy --only hosting
+```
+
+The live site at `https://tpsen-c1b69.web.app` updates within ~30 seconds.
+
+**Step 3 — Push to GitHub:**
+```powershell
+cd ..
+.\push.bat
+```
+
+Enter a short commit message describing what you changed (e.g. `"update chat bubble colours"`).
+
+---
+
+### J4 — Can You Edit Directly on GitHub?
+
+You **can** edit files on github.com (click a file → pencil icon), but:
+
+- Changes to UI code **will not go live** automatically — you still need to pull locally, build, and deploy to Firebase.
+- Direct GitHub edits are only practical for **documentation files** (README.md, CLAUDE.md, SETUP_GUIDE.md) where no build step is needed.
+
+For UI changes, always use the local workflow in J2–J3.
+
+---
+
+### J5 — Sync Changes from GitHub to Another Machine
+
+On the second machine, after cloning the repo:
+```powershell
+.\pull.bat        # Windows
+# or
+bash pull.sh      # Mac / Linux
+```
+
+Then follow J2 to start the local servers.
