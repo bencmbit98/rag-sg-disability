@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /queries/{docId} {
+      allow create: if request.resource.data.keys().hasAll([
+        'sessionId', 'userMessage', 'timestamp'
+      ]);
+      allow update: if request.resource.data.keys().hasAny([
+        'feedbackRating', 'feedbackComment'
+      ]);
+      allow read, delete: if false;
+    }
+
+    match /sessions/{docId} {
+      allow create, update: if true;
+      allow read, delete: if false;
+    }
+  }
+}
