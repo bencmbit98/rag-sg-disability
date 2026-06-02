@@ -1157,6 +1157,38 @@ firebase deploy --only hosting
 
 ### I3 — Daily Development Workflow
 
+The easiest way is to use the startup scripts included in the repo root.
+
+**Windows — double-click or run from any terminal:**
+
+| Script | What it does |
+|---|---|
+| `start-backend.bat` | Activates venv, sets SSL env vars, starts uvicorn on port 8000 |
+| `start-frontend.bat` | Sets portable Node.js path, starts Next.js dev server on port 3000 |
+
+```powershell
+# Terminal 1
+.\start-backend.bat
+
+# Terminal 2
+.\start-frontend.bat
+```
+
+**Mac / Linux — make executable first (one-time only):**
+```bash
+chmod +x start-backend.sh start-frontend.sh
+```
+Then run:
+```bash
+./start-backend.sh    # Terminal 1
+./start-frontend.sh   # Terminal 2
+```
+
+> **Note (Windows):** `start-frontend.bat` automatically adds the portable Node.js
+> folder (`%USERPROFILE%\nodejs\node-*`) to PATH. If Node.js was installed normally
+> (not portable), this is harmless — the system Node will be used instead.
+
+**Manual alternative (if scripts don't work):**
 ```powershell
 # Terminal 1 — Backend
 cd backend
@@ -1165,7 +1197,9 @@ $env:PYTHONHTTPSVERIFY = "0"
 $env:HF_HUB_DISABLE_SSL_VERIFICATION = "1"
 uvicorn app.main:app --reload --port 8000
 
-# Terminal 2 — Frontend
+# Terminal 2 — Frontend (set portable Node path first if needed)
+$nodePath = (Get-ChildItem "$env:USERPROFILE\nodejs" -Directory | Select-Object -First 1).FullName
+$env:PATH = "$nodePath;$env:PATH"
 cd frontend
 npm run dev
 
