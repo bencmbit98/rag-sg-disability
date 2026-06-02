@@ -42,14 +42,14 @@ export default function MessageInput({ onSend, disabled, error }: Props) {
           placeholder="Ask about SEN support, transport, care…"
           rows={2}
           disabled={disabled}
-          className="flex-1 resize-none rounded-2xl border border-gray-300 px-4 py-3 leading-snug focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 min-h-[52px] max-h-32"
+          className="flex-1 resize-none rounded-2xl border border-gray-300 px-4 py-3 leading-snug focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 min-h-[52px] max-h-32"
           aria-label="Type your question"
           style={{ fontSize: '16px' }}
         />
         <button
           onClick={handleSend}
           disabled={disabled || !text.trim()}
-          className="flex-shrink-0 w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          className="flex-shrink-0 w-11 h-11 rounded-full bg-purple-600 text-white flex items-center justify-center hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
           aria-label="Send message"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5" aria-hidden="true">
@@ -57,8 +57,16 @@ export default function MessageInput({ onSend, disabled, error }: Props) {
           </svg>
         </button>
       </div>
-      <p className="text-center text-xs text-gray-400 mt-1 pb-0.5">
+      <p className="text-center text-xs text-gray-400 mt-1">
         Enter to send · Shift+Enter for new line
+      </p>
+      <p className="text-center text-xs text-gray-400 mt-1 pb-0.5 px-2 leading-tight">
+        ⚠️ This chatbot provides general information only. Responses may not be accurate or current.
+        Temasek Polytechnic accepts no liability for decisions made based on this information.
+        For official guidance, contact{' '}
+        <a href="https://www.tp.edu.sg/student-services.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">TP Student Services</a>
+        {' '}or{' '}
+        <a href="https://www.sg-enable.org.sg" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">SG Enable</a>.
       </p>
     </div>
   )

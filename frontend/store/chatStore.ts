@@ -7,6 +7,7 @@ export interface Message {
   content: string
   sources?: Source[]
   docId?: string
+  isInScope?: boolean
   timestamp: number
 }
 

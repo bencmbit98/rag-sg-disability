@@ -32,6 +32,7 @@ export function useChat() {
           role: 'assistant',
           content: res.answer,
           sources: res.sources,
+          isInScope: res.is_in_scope,
           timestamp: Date.now(),
         })
 

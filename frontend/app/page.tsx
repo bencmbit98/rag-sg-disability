@@ -12,7 +12,11 @@ export default function Home() {
     <div className="flex flex-col h-screen bg-white">
       <Header />
       <div className="flex flex-col flex-1 overflow-hidden mt-[68px]">
-        <ChatWindow messages={messages} isLoading={isLoading} />
+        <ChatWindow
+          messages={messages}
+          isLoading={isLoading}
+          onSuggestedQuestion={sendMessage}
+        />
         <MessageInput onSend={sendMessage} disabled={isLoading} error={error} />
       </div>
     </div>
