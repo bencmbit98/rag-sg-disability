@@ -706,7 +706,7 @@ User message
 │  Embed query → ChromaDB cosine search       │
 │  Get top-5 chunks + their distances         │
 │                                             │
-│  Best distance > MAX_DISTANCE (0.65)?       │
+│  Best distance > MAX_DISTANCE (0.85)?       │
 │  (i.e. nothing in the index is relevant)    │
 └──────────┬──────────────────────────────────┘
            │ YES — out of scope               │ NO — proceed
@@ -740,7 +740,7 @@ User message
 ### Layer 1 — Retrieval Gate (in `retrieval/vector_store.py`)
 
 ```python
-MAX_DISTANCE = 0.65   # ChromaDB cosine distance; tune after ingestion
+MAX_DISTANCE = 0.85   # ChromaDB cosine distance; tuned after testing (raised from 0.65)
                       # distance 0 = identical, 2 = opposite
                       # 0.65 ≈ similarity score of 0.35 — "barely related"
 

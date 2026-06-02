@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     chunk_size: int = 512
     chunk_overlap: int = 64
     top_k: int = 5
-    max_distance: float = 0.65
+    max_distance: float = 0.85
 
     # Guardrails
     out_of_scope_sentinel: str = "[OUT_OF_SCOPE]"
