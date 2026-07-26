@@ -6,10 +6,9 @@ import ChatBubble from './ChatBubble'
 import LoadingDots from './LoadingDots'
 
 const SUGGESTED_QUESTIONS = [
-  'How do I apply for SEN support at TP?',
-  'What is the taxi subsidy scheme?',
-  'What care services exist for adults with disabilities?',
-  'What job support is available for PWDs?',
+  'What are the SEN funds I can tap on to apply for Assistive Technology (Specialised Support)?',
+  'I want to get assistive technology.',
+  'How do I make an appointment with a SEN officer?',
 ]
 
 interface Props {
