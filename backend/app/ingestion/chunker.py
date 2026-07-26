@@ -31,7 +31,7 @@ def chunk_pages(pages: list[ScrapedPage]) -> list[Chunk]:
     for page in pages:
         texts = splitter.split_text(page.markdown)
         for i, text in enumerate(texts):
-            uid = hashlib.md5(f"{page.source_url}::{i}".encode()).hexdigest()
+            uid = hashlib.md5(f"{page.label}::{page.source_url}::{i}".encode()).hexdigest()
             chunks.append(Chunk(
                 id=uid,
                 text=text,

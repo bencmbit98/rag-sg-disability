@@ -42,9 +42,10 @@ logger = logging.getLogger(__name__)
 from app.config import CRAWL_SOURCES, settings  # noqa: E402
 from app.ingestion.chunker import chunk_pages  # noqa: E402
 from app.ingestion.embedder import embed_and_store  # noqa: E402
-from app.ingestion.scraper import scrape_source  # noqa: E402
+from app.ingestion.scraper import load_curated_pages, load_pages_from_raw, scrape_source  # noqa: E402
 
 RAW_DIR = Path(__file__).parent.parent / "data" / "raw"
+CURATED_DIR = Path(__file__).parent.parent / "data" / "curated"
 
 
 async def main() -> None:
@@ -67,11 +68,26 @@ async def main() -> None:
     summary = []
     for source in CRAWL_SOURCES:
         label = source["label"]
-        logger.info("=== %s ===", label)
-        pages = await scrape_source(source, RAW_DIR)
+        raw_source_dir = RAW_DIR / label
+        existing = list(raw_source_dir.glob("*.md")) if raw_source_dir.exists() else []
+        if existing:
+            logger.info("=== %s === (using %d pre-scraped files)", label, len(existing))
+            pages = load_pages_from_raw(source, RAW_DIR)
+        else:
+            logger.info("=== %s === (scraping live)", label)
+            pages = await scrape_source(source, RAW_DIR)
         chunks = chunk_pages(pages)
         stored = embed_and_store(chunks, model)
         summary.append({"label": label, "pages": len(pages), "chunks": len(chunks), "stored": stored})
+
+    # Load and index manually curated knowledge files
+    if CURATED_DIR.exists():
+        curated_pages = load_curated_pages(CURATED_DIR)
+        if curated_pages:
+            logger.info("=== curated === (%d files)", len(curated_pages))
+            chunks = chunk_pages(curated_pages)
+            stored = embed_and_store(chunks, model)
+            summary.append({"label": "curated", "pages": len(curated_pages), "chunks": len(chunks), "stored": stored})
 
     print("\n" + "=" * 60)
     print(f"{'Source':<25} {'Pages':>6} {'Chunks':>8} {'Stored':>8}")

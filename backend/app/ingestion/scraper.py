@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 from dataclasses import dataclass
@@ -63,6 +64,35 @@ def _extract_links(result, base_url: str) -> list[str]:
     return hrefs
 
 
+def load_pages_from_raw(source: dict, raw_dir: Path) -> list[ScrapedPage]:
+    """Load pre-scraped pages from data/raw/<label>/ instead of hitting the network."""
+    label = source["label"]
+    out_dir = raw_dir / label
+    pages = []
+    for md_file in sorted(out_dir.glob("*.md")):
+        json_file = md_file.with_suffix(".json")
+        if not json_file.exists():
+            logger.warning("[%s] no metadata for %s, skipping", label, md_file.name)
+            continue
+        try:
+            meta = json.loads(json_file.read_text(encoding="utf-8"))
+            markdown = md_file.read_text(encoding="utf-8")
+            if markdown.strip():
+                pages.append(ScrapedPage(
+                    label=meta["label"],
+                    seed_url=meta["seed_url"],
+                    source_url=meta["source_url"],
+                    page_title=meta["page_title"],
+                    markdown=markdown,
+                    crawl_depth=meta["crawl_depth"],
+                    fetched_at=meta["fetched_at"],
+                ))
+        except Exception as exc:
+            logger.warning("[%s] failed to load %s: %s", label, md_file.name, exc)
+    logger.info("[%s] loaded %d pages from pre-scraped files", label, len(pages))
+    return pages
+
+
 async def scrape_source(source: dict, raw_dir: Path) -> list[ScrapedPage]:
     from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
 
@@ -119,7 +149,20 @@ async def scrape_source(source: dict, raw_dir: Path) -> list[ScrapedPage]:
                 fetched_at=datetime.now(timezone.utc).isoformat(),
             )
             pages.append(page)
-            (out_dir / f"{_url_to_slug(url)}.md").write_text(markdown, encoding="utf-8")
+
+            slug = _url_to_slug(url)
+            (out_dir / f"{slug}.md").write_text(markdown, encoding="utf-8")
+            (out_dir / f"{slug}.json").write_text(
+                json.dumps({
+                    "label": page.label,
+                    "seed_url": page.seed_url,
+                    "source_url": page.source_url,
+                    "page_title": page.page_title,
+                    "crawl_depth": page.crawl_depth,
+                    "fetched_at": page.fetched_at,
+                }),
+                encoding="utf-8",
+            )
 
             if depth < max_depth:
                 for href in _extract_links(result, url):
@@ -128,4 +171,55 @@ async def scrape_source(source: dict, raw_dir: Path) -> list[ScrapedPage]:
                         queue.append((norm, depth + 1))
 
     logger.info("[%s] done — %d pages scraped", label, len(pages))
+    return pages
+
+
+def load_curated_pages(curated_dir: Path) -> list[ScrapedPage]:
+    """Load manually curated markdown files as ScrapedPage objects.
+
+    Each file may begin with a YAML-style front matter block:
+        ---
+        label: tp_sen
+        url: https://...
+        title: Page Title
+        ---
+    Fields not present default to safe fallbacks.
+    """
+    pages = []
+    for md_file in sorted(curated_dir.glob("*.md")):
+        text = md_file.read_text(encoding="utf-8")
+        label = "curated"
+        url = f"curated://{md_file.stem}"
+        title = md_file.stem
+        body = text
+
+        fm_match = re.match(r"^---\s*\n(.*?)\n---\s*\n", text, re.DOTALL)
+        if fm_match:
+            body = text[fm_match.end():]
+            for line in fm_match.group(1).splitlines():
+                if ":" in line:
+                    key, val = line.split(":", 1)
+                    key, val = key.strip(), val.strip()
+                    if key == "label":
+                        label = val
+                    elif key == "url":
+                        url = val
+                    elif key == "title":
+                        title = val
+
+        if not body.strip():
+            logger.warning("[curated] skipping empty file: %s", md_file.name)
+            continue
+
+        pages.append(ScrapedPage(
+            label=label,
+            seed_url=url,
+            source_url=url,
+            page_title=title,
+            markdown=body,
+            crawl_depth=0,
+            fetched_at=datetime.now(timezone.utc).isoformat(),
+        ))
+        logger.info("[curated] loaded %s (%d chars)", md_file.name, len(body))
+
     return pages
