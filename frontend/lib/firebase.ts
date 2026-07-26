@@ -1,5 +1,5 @@
 import { getApps, initializeApp } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
+import { type Firestore, getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,5 +11,12 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 }
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
-export const db = getFirestore(app)
+let db: Firestore | null = null
+try {
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
+  db = getFirestore(app)
+} catch {
+  // Firebase config is missing or invalid — analytics will be silently disabled
+}
+
+export { db }

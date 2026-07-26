@@ -10,7 +10,9 @@ export async function logQuery(data: {
   responseTimeMs: number
   historyLength: number
 }): Promise<string> {
-  const ref = await addDoc(collection(db, 'queries'), {
+  const store = db
+  if (!store) return ''
+  const ref = await addDoc(collection(store, 'queries'), {
     ...data,
     feedbackRating: null,
     feedbackComment: null,
@@ -27,7 +29,9 @@ export async function logFeedback(
   rating: number,
   comment?: string,
 ): Promise<void> {
-  await updateDoc(doc(db, 'queries', docId), {
+  const store = db
+  if (!store) return
+  await updateDoc(doc(store, 'queries', docId), {
     feedbackRating: rating,
     feedbackComment: comment ?? null,
   })
