@@ -21,7 +21,7 @@ export const viewport: Viewport = {
   themeColor: '#1d4ed8',
 }
 
-const GA_ID = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+const GA_ID = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID ?? ''
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
