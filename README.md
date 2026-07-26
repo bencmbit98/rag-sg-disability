@@ -193,7 +193,7 @@ rag-sg-disability/
 
 Three layers prevent the LLM from answering off-topic questions:
 
-1. **Distance gate** — query embedding must be within `MAX_DISTANCE=0.65` of at least one indexed chunk
+1. **Distance gate** — query embedding must be within `MAX_DISTANCE=0.85` of at least one indexed chunk
 2. **Strict system prompt** — LLM is instructed to output `[OUT_OF_SCOPE]` if context is insufficient
 3. **Sentinel check** — backend detects the sentinel and returns a friendly refusal message
 

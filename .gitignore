@@ -1,4 +1,3 @@
-cat > .gitignore << 'EOF'
 # Python
 __pycache__/
 *.py[cod]
@@ -21,7 +20,6 @@ backend/data/raw/
 node_modules/
 frontend/.next/
 frontend/out/
-frontend/.env.local
 
 # Firebase
 .firebase/
@@ -35,4 +33,3 @@ firebase-debug.log
 
 # Logs
 *.log
-EOF

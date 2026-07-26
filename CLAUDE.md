@@ -527,13 +527,14 @@ export async function logFeedback(docId: string, rating: number, comment?: strin
 - [x] Frontend live: https://tpsen-c1b69.web.app
 - [x] End-to-end test on browser confirmed working
 - [x] Firestore receiving query documents confirmed
-- [ ] GitHub Actions CI/CD (future work)
+- [x] GitHub Actions CI/CD — `.github/workflows/firebase-deploy.yml` auto-deploys frontend on push to `main`; all `NEXT_PUBLIC_*` secrets configured in GitHub
+- [ ] `hf-deploy.yml` GitHub Actions workflow — auto-deploy backend to HuggingFace on push (currently manual via `scripts/deploy_to_hf.py`)
 - [ ] GA4 event verification (future work)
 - [ ] Test: Add to Home Screen on real mobile device (future work)
 
 ---
 
-## Live Deployment (as of 2026-06-01)
+## Live Deployment (as of 2026-07-26)
 
 | Service | URL |
 |---|---|
@@ -578,6 +579,10 @@ The `hf` CLI uses httpx without the patch. Use `scripts/deploy_to_hf.py` which p
 - **`@types/minimatch`** must be installed as devDependency — next-pwa pulls it in transitively
 - **ChromaDB deduplication** — the 3 enablingguide.sg seeds share an `allowed_prefix` and crawl overlapping sub-pages. Chunk IDs are based on `url::chunk_index`, so ChromaDB upserts naturally deduplicate. Final count (~4,065) is less than the sum of per-source counts (~7,105)
 - **HuggingFace free tier pausing** — build-time ingestion caused the Space to be paused mid-build. Solution: moved ingestion to `start.sh` (runtime), which runs once on first container start and persists across restarts
+- **`start.sh` hash-based re-ingestion** — `start.sh` hashes all files under `data/` (excluding `chroma_db/`) plus `scripts/ingest.py` and `app/ingestion/`. If the hash matches the stored value, ingestion is skipped entirely. This avoids slow re-ingestion on every container restart while still picking up new curated content automatically
+- **Curated content** — `backend/data/curated/` holds manually written `.md` files that supplement scraped content. Each file has YAML front matter (`label`, `url`, `title`). The `url` field must be unique (use `#fragment` anchors) to avoid chunk ID collisions with other files at the same base URL. Loaded by `ingestion/scraper.py:load_curated_pages()` and merged with scraped pages before chunking
+- **Firebase hydration fix** — `lib/firebase.ts` wraps `initializeApp` in try/catch so a missing `apiKey` never crashes the module. `lib/analytics.ts` uses `const store = db; if (!store) return` guards so analytics silently no-ops when Firebase config is absent. This prevents React hydration failures that strip CSS when `NEXT_PUBLIC_*` env vars are undefined
+- **GitHub Actions secrets required** — all 8 `NEXT_PUBLIC_*` variables must be added as GitHub repository Secrets or the Firebase deploy build will produce a broken app (API URL is undefined, Firebase crashes). Values come from `frontend/.env.local`
 
 ---
 
@@ -878,27 +883,3 @@ interface QueryLog {
 - Do deep-crawled sub-pages improve answer quality vs seed pages only?
 - What's the correlation between similarity score and feedback rating?
 
----
-
-## Updated Build Phases
-
-### 🔲 Phase 2 — Ingestion Pipeline (updated for deep crawl)
-- [ ] `ingestion/scraper.py` — crawl4ai with `allowed_prefix`, `max_depth`, `max_pages`
-- [ ] Log every crawled URL and its depth
-- [ ] Dedup URLs before scraping (same page may be linked from multiple places)
-- [ ] Save raw markdown to `data/raw/<label>/<slug>.md` (one file per page)
-- [ ] `ingestion/chunker.py` — chunk each page, carry full metadata
-- [ ] `ingestion/embedder.py` — embed + upsert with extended metadata
-- [ ] `scripts/ingest.py` — orchestrate, print summary table per seed
-- [ ] Verify: query ChromaDB directly, check sub-page chunks appear
-
-### 🔲 Phase 3 — Retrieval + LLM (updated for guardrails)
-- [ ] `retrieval/vector_store.py` — return distances alongside chunks
-- [ ] `retrieval/vector_store.py` — `is_in_scope()` function with `MAX_DISTANCE`
-- [ ] `llm/groq_client.py` — strict system prompt with `[OUT_OF_SCOPE]` sentinel
-- [ ] `api/routes.py` — sentinel check + `OUT_OF_SCOPE_MESSAGE`
-- [ ] `api/schemas.py` — add `is_in_scope`, `top_similarity_score`, `refusal_reason` to response
-- [ ] Test guardrails: 5 in-scope + 5 clearly out-of-scope queries
-- [ ] Test edge cases: vaguely related queries, partial matches
-- [ ] Tune `MAX_DISTANCE` based on test results
-- [ ] `POST /query` response includes guardrail fields for Firestore logging

@@ -34,3 +34,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# portable Node.js zip (download artefact, not part of the project)
+node-*.zip
